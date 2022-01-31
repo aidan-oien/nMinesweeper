@@ -63,7 +63,7 @@ int main(){
 
 	// Loop
 
-	game(10,10,20,0); // Hard 30,16,20,0
+	game(30,16,20,0); // Hard 30,16,20,0
 	getch();
 	
 
@@ -230,13 +230,10 @@ void game(int x, int y, int ratio, bool savedGame){
 
 
 	// Populate board
-	for(int i = 0; i < y; i++){
-		for(int j = 0; j < x; j++){
-			if((((rand()%100)+ratio)/100)==1){
-				board[i][j].mine = 1;
-				mines++;
-			}
-		}
+	mines = (y * x) * (float)ratio/100;
+	
+	for(int i = 0; i < mines; i++){
+		board[rand()%y+1][rand()%x+1].mine = 1;
 	}
 
 
@@ -273,11 +270,11 @@ void game(int x, int y, int ratio, bool savedGame){
 					attron(COLOR_PAIR(10));
 					mvprintw(i, j * 2, "F ");
 					attroff(COLOR_PAIR(10));
-				} else if(board[i][j].visible == 0){ // -------------------- Covered
+				} else /*if(board[i][j].visible == 0){ // -------------------- Covered
 					attron(COLOR_PAIR(11));
 					mvprintw(i, j * 2, "  ");
 					attroff(COLOR_PAIR(11));
-				} else if(board[i][j].mine == 1){ // ---------------- Mine
+				} else*/ if(board[i][j].mine == 1){ // ---------------- Mine
 					attron(COLOR_PAIR(9));
 					mvprintw(i, j * 2, "M ");
 					attroff(COLOR_PAIR(9));
@@ -341,20 +338,21 @@ void game(int x, int y, int ratio, bool savedGame){
 					debug = 1;
 				} else {
 					debug = 0;
-					clear();
+					erase();
+					refresh();
 				}
 				break;
 		}
 
 		if(debug){
-			mvprintw(0,x+11,"gameEnd = %d ",vic);
-			mvprintw(1,x+11,"cNumber = %d ",board[xc][yc].number);
-			mvprintw(2,x+11,"isFlag? = %d ",board[xc][yc].flagged);
-			mvprintw(3,x+11,"isMine? = %d ",board[xc][yc].mine);
-			mvprintw(4,x+11,"xcValue = %d ",xc);
-			mvprintw(5,x+11,"ycValue = %d ",yc);
-			mvprintw(6,x+11,"ttlMine = %d ",mines);
-			mvprintw(7,x+11,"ttlFlag = %d ",flags);
+			mvprintw(0, x * 2, "gameEnd = %d ", vic);
+			mvprintw(1, x * 2, "cNumber = %d ", board[xc][yc].number);
+			mvprintw(2, x * 2, "isFlag? = %d ", board[xc][yc].flagged);
+			mvprintw(3, x * 2, "isMine? = %d ", board[xc][yc].mine);
+			mvprintw(4, x * 2, "xcValue = %d ", xc);
+			mvprintw(5, x * 2, "ycValue = %d ", yc);
+			mvprintw(6, x * 2, "ttlMine = %d ", mines);
+			mvprintw(7, x * 2, "ttlFlag = %d ", flags);
 			refresh();
 		}
 	}
