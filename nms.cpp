@@ -127,15 +127,52 @@ bool menuSelect(int start, int end, int& choice){
 				(choice)--;
 			}
 			return 0;
+
 		case 's':
 			if(choice < end){
 				(choice)++;
 			}
 			return 0;
+
 		case 'e':
 			return 1;
 	}
 	return 0;
+}
+//--------------------------------------------------------------------------------------------------// RENDER BOARD
+
+void renderBoard(struct cell **board, int y, int x, int yc, int xc, bool debug){
+	for(int i = 0; i < y; i++){
+		for(int j = 0; j < x; j++){
+			if(xc==i && yc==j){
+				attron(A_STANDOUT);
+			}
+			if(board[i][j].flagged == 1){ // ------------- Flag
+				attron(COLOR_PAIR(10));
+				mvprintw(i, j * 2, "F ");
+				attroff(COLOR_PAIR(10));
+			} else if(board[i][j].visible == 0 && !debug){ // -------------------- Covered
+				attron(COLOR_PAIR(11));
+				mvprintw(i, j * 2, "  ");
+				attroff(COLOR_PAIR(11));
+			} else if(board[i][j].mine == 1){ // ---------------- Mine
+				attron(COLOR_PAIR(9));
+				mvprintw(i, j * 2, "M ");
+				attroff(COLOR_PAIR(9));
+			} else if(board[i][j].number != 0){ // -------------- Number
+				attron(COLOR_PAIR(board[i][j].number));
+				mvprintw(i, j * 2, "%d ", board[i][j].number);
+				attroff(COLOR_PAIR(board[i][j].number));
+			} else { // ----------------------------------------- Space
+				attron(COLOR_PAIR(1));
+				mvprintw(i, j * 2, "  ");
+				attroff(COLOR_PAIR(1));
+			}
+			attroff(A_STANDOUT);
+			refresh();
+		}
+	}
+
 }
 
 //--------------------------------------------------------------------------------------------------// FLAGGED ALL MINES
@@ -151,19 +188,6 @@ int flaggedAllMines(struct cell **board, bool &allFlagged, int y, int x, int fla
 				allFlagged = 0;
 
 			}
-
-			/*
-			mvprintw(0,60,"iValue  = %d  ",i);
-			mvprintw(1,60,"jValue  = %d  ",j);
-			mvprintw(2,60,"isMine? = %d  ",board[i][j].mine);
-			mvprintw(3,60,"isFlag? = %d  ",board[i][j].flagged);
-			mvprintw(4,60,"mines   = %d  ",mines);
-			mvprintw(5,60,"flags   = %d  ",flags);
-			mvprintw(6,60,"allflgd = %d  ",allFlagged);
-			refresh();
-			getch();
-			*/
-
 		}
 	}
 
@@ -171,6 +195,24 @@ int flaggedAllMines(struct cell **board, bool &allFlagged, int y, int x, int fla
 	return 1;
 	}
 	return -1;
+
+}
+
+//--------------------------------------------------------------------------------------------------// OPEN AREA
+
+void openArea(struct cell **board, int i, int j){
+
+	for(int k = i-1; k <= i+1; k++){
+		for(int l = j-1; l <= j+1; l++){
+			//Make sure index isn't negative
+			if((k >= 0 && l >= 0)/*&&(k <= x && l <= y)*/){
+				if(board[i][j].visible && !board[k][l].visible && board[i][j].number == 0 && board[k][l].mine == 0){
+					board[k][l].visible = 1;
+				}
+			}
+		}
+	}
+
 }
 
 //--------------------------------------------------------------------------------------------------// MENU
@@ -208,6 +250,7 @@ int menu(){
 			return choice;
 		}
 	}
+
 }
 
 //--------------------------------------------------------------------------------------------------// GAME
@@ -215,8 +258,8 @@ int menu(){
 void game(int x, int y, int ratio, bool savedGame){
 
 	// Var setup
-	int yc = 0, xc = 0, flags = 0, mines = 0, vic = -1;
-	bool on = 0, allFlagged = 0, debug = 0;
+	int yc = 0, xc = 0, ym = 0, xm = 0, flags = 0, mines = 0, vic = -1;
+	bool on = 0, allFlagged = 0, debug = 0, makingVisble = 0;
 
 
 	// Create new board
@@ -231,9 +274,15 @@ void game(int x, int y, int ratio, bool savedGame){
 
 	// Populate board
 	mines = (y * x) * (float)ratio/100;
-	
-	for(int i = 0; i < mines; i++){
-		board[rand()%y+1][rand()%x+1].mine = 1;
+
+	for(int i = 0; i < mines;){
+		ym = rand() % y;
+		xm = rand() % x;
+
+		if(board[ym][xm].mine == 0){
+			board[ym][xm].mine = 1;
+			i++;
+		}
 	}
 
 
@@ -258,70 +307,72 @@ void game(int x, int y, int ratio, bool savedGame){
 	// GAME LOOP /\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
 	while(vic == -1){
+		renderBoard(board,y,x,yc,xc,debug);
 
-		// RENDER RENDER RENDER RENDER RENDER RENDER RENDER RENDER RENDER RENDER RENDER RENDER RENDER REND
-		for(int i = 0; i < y; i++){
-			for(int j = 0; j < x; j++){
-				if(xc==i && yc==j){
-					attron(A_STANDOUT);
-				}
-				
-				if(board[i][j].flagged == 1){ // ------------- Flag
-					attron(COLOR_PAIR(10));
-					mvprintw(i, j * 2, "F ");
-					attroff(COLOR_PAIR(10));
-				} else /*if(board[i][j].visible == 0){ // -------------------- Covered
-					attron(COLOR_PAIR(11));
-					mvprintw(i, j * 2, "  ");
-					attroff(COLOR_PAIR(11));
-				} else*/ if(board[i][j].mine == 1){ // ---------------- Mine
-					attron(COLOR_PAIR(9));
-					mvprintw(i, j * 2, "M ");
-					attroff(COLOR_PAIR(9));
-				} else if(board[i][j].number != 0){ // -------------- Number
-					attron(COLOR_PAIR(board[i][j].number));
-					mvprintw(i, j * 2, "%d ", board[i][j].number);
-					attroff(COLOR_PAIR(board[i][j].number));
-				} else { // ----------------------------------------- Space
-					attron(COLOR_PAIR(1));
-					mvprintw(i, j * 2, "  ");
-					attroff(COLOR_PAIR(1));
-				}
-
-				attroff(A_STANDOUT);
-				refresh();
-			}
-		}
-
-		// CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL CONTROL 
 		switch(getch()){
 			case 'w': // -------------------- Up
 				if(xc > 0){
 					xc--;
 				}
 				break;
+
 			case 'a': // -------------------- Right
 				if(yc > 0){
 					yc--;
 				}
 				break;
+
 			case 's': // -------------------- Left
 				if(xc < y - 1){
 					xc++;
 				}
 				break;
+
 			case 'd': // -------------------- Down
 				if(yc < x - 1){
 					yc++;
 				}
 				break;
-			case 'o': // -------------------- Uncover Area
+
+			case 'o': // -------------------- Uncover Area and Hit Mine
 				board[xc][yc].clicked = 1;
 				board[xc][yc].visible = 1;
-				if(board[xc][yc].clicked == board[xc][yc].mine){ //hit mine
+				makingVisble = 1;
+
+				while(makingVisble){
+					for(int i = 0; i < y; i++){ // Uncover Area
+						for(int j = 0; j < x; j++){
+							openArea(board,i,j);
+						}
+					}
+					for(int i = y - 1; i > 0; i--){
+						for(int j = y - 1; j > 0; j--){
+							openArea(board,i,j);
+						}
+					}
+					makingVisble = 0;
+
+					for(int i = 0; i < y; i++){ // Uncover Area
+						for(int j = 0; j < x; j++){
+							for(int k = i-1; k <= i+1; k++){
+								for(int l = j-1; l <= j+1; l++){
+									//Make sure index isn't negative
+									if((k >= 0 && l >= 0)/*&&(k <= x && l <= y)*/){
+										if(board[i][j].visible && !board[k][l].visible && board[i][j].number == 0){
+											makingVisble = 1;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if(board[xc][yc].clicked == board[xc][yc].mine){ // Hit mine
 					vic = 0;
 				}
 				break;
+
 			case 'p': // -------------------- Flag
 				if(board[xc][yc].visible == 0 && board[xc][yc].flagged == 0){
 					board[xc][yc].flagged = 1;
@@ -333,6 +384,7 @@ void game(int x, int y, int ratio, bool savedGame){
 					vic = flaggedAllMines(board,allFlagged,y,x,flags,mines);
 				}
 				break;
+
 			case 'm': // -------------------- Debug menu
 				if(!debug){
 					debug = 1;
@@ -357,9 +409,17 @@ void game(int x, int y, int ratio, bool savedGame){
 		}
 	}
 
+	for(int i = 0; i < y; i++){ // Uncover Area
+		for(int j = 0; j < x; j++){
+			board[i][j].visible = 1;
+		}
+	}
+
+	renderBoard(board,y,x,yc,xc,debug);
+	
 	//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
-	clear();
+	//clear();
 
 	if(vic == 1){
 		printw("WIN");
@@ -373,6 +433,7 @@ void game(int x, int y, int ratio, bool savedGame){
 		delete[] board[i];
 	}
 	delete[] board;
+
 }
 
 //--------------------------------------------------------------------------------------------------//
