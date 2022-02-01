@@ -27,9 +27,30 @@ struct cell {
 
 };
 
+char menu_options[][MENU_STRING_LENGTH] = {
+		"New Game     ", // 00-04 Main menu
+		"Saved Game   ",
+		"Leaderboards ",
+		"Options      ",
+		"Exit Game    ",
+		"Continue     ", // 05-08 In-game menu
+		"Save Game    ",
+		"Options      ",
+		"Quit Game    ",
+		"Beginner     ", // 09-14 Difficulty menu
+		"Intermediate ",
+		"Hard         ",
+		"Expert       ",
+		"Custom       ",
+		"< Back       ",
+		"Keybinds     ", // 15-17 Options menu
+		"Themes       ",
+		"< Back       ",
+	};
+
 //--------------------------------------------------------------------------------------------------// FUNCTIONS USED IN MAIN
 
-int menu();
+int menu(int y, int x);
 void game(int y, int x, int ratio, bool savedGame);
 
 //--------------------------------------------------------------------------------------------------// MAIN
@@ -63,32 +84,48 @@ int main(){
 
 	// Loop
 
-	game(30,16,20,0); // Hard 30,16,20,0
-	getch();
-	
-
-	/*
 	while(on){
-
-		switch(menu()) {
-
+		switch(menu(0,4)){
 			case 0:
-
 				clear();
-				printw("Hi");
-				getch();
-				game(10,10,20,0);
+				switch(menu(9,14)){
+					case 9:
+						game(9,9,9,0);
+						break;
+					case 10:
+						game(16,16,15,0);
+						break;
+					case 11:
+						game(30,16,20,0);
+						break;
+					case 12:
+						game(40,22,25,0);
+						break;
+					case 13:
+						game(10,10,20,0);
+						break;
+
+
+				}
 				break;
 			
-			case 4:
-
+			case 1:
 				on = 0;
-
+			case 2:
+				on = 0;
+			case 3:
+				switch(menu(15,17)){
+					case 15:
+						clear();
+						break;
+					case 16:
+						clear();
+						break;
+				}
+			case 4:
+				on = 0;
 		}
-
 	}
-	*/
-
 	endwin();
 
 	return 0;
@@ -97,21 +134,20 @@ int main(){
 
 //--------------------------------------------------------------------------------------------------// RENDER MENU
 
-void renderMenu(int start, int end, int choice, char menu[][MENU_STRING_LENGTH]){
+void renderMenu(int start, int end, int choice/*, char menu[][MENU_STRING_LENGTH]*/){
 	
 	int y = 2;
 
 	for (int i = start; i <= end; i++){
 		if(choice == i){
 			attron(A_STANDOUT);
-			mvprintw(y, 2, menu[i]);
+			mvprintw(y, 2, menu_options[i]);
 			attroff(A_STANDOUT);
 		} else {
-			mvprintw(y, 2, menu[i]);
+			mvprintw(y, 2, menu_options[i]);
 		}
 		y++;
 	}
-
 	refresh();
 }
 
@@ -217,36 +253,15 @@ void openArea(struct cell **board, int i, int j){
 
 //--------------------------------------------------------------------------------------------------// MENU
 
-int menu(){
+int menu(int start, int end){
 
-	char menu[][MENU_STRING_LENGTH] = {
-		"New Game     ", // 00-04 Main menu
-		"Saved Game   ",
-		"Leaderboards ",
-		"Options      ",
-		"Exit Game    ",
-		"Continue     ", // 05-08 In-game menu
-		"Save Game    ",
-		"Options      ",
-		"Quit Game    ",
-		"Beginner     ", // 09-14 Difficulty menu
-		"Intermediate ",
-		"Hard         ",
-		"Expert       ",
-		"Custom       ",
-		"< Back       ",
-		"Keybinds     ", // 15-17 Options menu
-		"Themes       ",
-		"< Back       ",
-	};
-
-	int choice = 0;
+	int choice = start;
 
 	clear();
 
 	while(1){
-		renderMenu(0,4,choice,menu);
-		if(menuSelect(0,4,choice)){
+		renderMenu(start,end,choice);
+		if(menuSelect(start,end,choice)){
 			return choice;
 		}
 	}
@@ -255,7 +270,7 @@ int menu(){
 
 //--------------------------------------------------------------------------------------------------// GAME
 
-void game(int x, int y, int ratio, bool savedGame){
+void game(int y, int x, int ratio, bool savedGame){
 
 	// Var setup
 	int yc = 0, xc = 0, ym = 0, xm = 0, flags = 0, mines = 0, vic = -1;
@@ -427,6 +442,7 @@ void game(int x, int y, int ratio, bool savedGame){
 		printw("LOSE");
 	}
 	refresh();
+	getch();
 
 	// Delete board
 	for(int i = 0; i < y; i++){
