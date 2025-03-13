@@ -1,10 +1,10 @@
-#include "shared.h"
+// #include "shared.h"
 
 //==================================================================================================//
 
-typedef struct menuOption menuOption;
+typedef struct menuSelection menuSelection;
 
-struct menuOption
+struct menuSelection
 {
 	int confirm;
 	int selection;
@@ -23,7 +23,7 @@ enum option
 int mainMenu( int selection );
 gameSettings * difficultyMenu();
 
-menuOption menuInput( int length, menuOption choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win );
-void renderMenu( int length, menuOption selection, char options[][MENU_STRING_LENGTH], WINDOW * win );
+menuSelection menuInput( int length, menuSelection choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win );
+void renderMenu( int length, menuSelection selection, char options[][MENU_STRING_LENGTH], WINDOW * win );
 
 //==================================================================================================//

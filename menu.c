@@ -33,6 +33,7 @@ enum difficulty
 //==================================================================================================//
 
 int mainMenu( int selection );
+gameSettings * difficultyMenu();
 menuSelection menuInput( int length, menuSelection choice, char options[][MENU_STRING_LENGTH], WINDOW * win );
 void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LENGTH], WINDOW * win );
 
@@ -72,8 +73,8 @@ int mainMenu( int selection )
 
 gameSettings * difficultyMenu()
 {
-    int x = 18, y = 3;
-    int menuWidth = 10;
+    int x = 20, y = 2;
+    int menuWidth = 11;
     int menuLength = 6;
 
     WINDOW * difficultyMenuWin = newwin( menuLength + 2, menuWidth, y, x );
@@ -189,9 +190,9 @@ void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LE
 	{
 		if ( choice.selection == i )
         {
-			attron( A_STANDOUT );
+			wattron( win, A_STANDOUT );
 			mvwprintw( win, y, 2, options[ i ] );
-			attroff( A_STANDOUT );
+			wattroff( win, A_STANDOUT );
 		}
 		else
 		{
@@ -205,7 +206,7 @@ void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LE
 
     box( win, 0, 0 );
 
-    mvwprintw( win, choice.selection + 1, 0, ">" );
+    //mvwprintw( win, choice.selection + 1, 0, ">" );
 
     wrefresh( win );
 }

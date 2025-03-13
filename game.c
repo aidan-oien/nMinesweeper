@@ -1,5 +1,5 @@
 #include <ncurses.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include "shared.h"
 
 //==================================================================================================//
@@ -17,12 +17,21 @@ struct cell
 
 //==================================================================================================//
 
+gameResults * startGame( gameSettings * boardSettings );
+cell ** createBoard( gameSettings * boardSettings );
+void deleteBoard( cell ** board, gameSettings * boardSettings );
+int calculateMineCount( gameSettings * boardSettings );
+int min( int a, int b );
+
+//==================================================================================================//
+
 gameResults * startGame( gameSettings * boardSettings )
 {
     WINDOW * gameWindow = newwin( 24,42,0,0 );
 
-
     calculateMineCount( boardSettings );
+
+    delwin( gameWindow );
 }
 
 cell ** createBoard( gameSettings * boardSettings )
@@ -97,6 +106,12 @@ int calculateMineCount( gameSettings * boardSettings )
     {
         return boardSettings->ySize * boardSettings->xSize * boardSettings->mineRatio;
     }
+}
+
+int min( int a, int b )
+{
+    if ( a < b ) return a;
+    else return b;
 }
 
 //==================================================================================================//
