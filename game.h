@@ -18,6 +18,7 @@ struct cell
 gameResults * startGame( gameSettings * boardSettings );
 cell ** createBoard( gameSettings * boardSettings );
 void deleteBoard( cell ** board, gameSettings * boardSettings );
+void renderBoard( WINDOW * win, cell ** board, gameSettings * boardSettings );
 int calculateMineCount( gameSettings * boardSettings );
 int min( int a, int b );
 

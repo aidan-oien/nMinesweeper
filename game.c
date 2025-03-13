@@ -20,6 +20,7 @@ struct cell
 gameResults * startGame( gameSettings * boardSettings );
 cell ** createBoard( gameSettings * boardSettings );
 void deleteBoard( cell ** board, gameSettings * boardSettings );
+void renderBoard( WINDOW * win, cell ** board, gameSettings * boardSettings );
 int calculateMineCount( gameSettings * boardSettings );
 int min( int a, int b );
 
@@ -29,7 +30,19 @@ gameResults * startGame( gameSettings * boardSettings )
 {
     WINDOW * gameWindow = newwin( 24,42,0,0 );
 
-    calculateMineCount( boardSettings );
+    // board creation and setup
+    cell ** gameBoard = createBoard( boardSettings );
+    gameBoard = calculateMineCount( boardSettings );
+    // gameBoard = plotNumbers( cell ** gameBoard );
+
+    renderBoard( gameWindow, gameBoard, boardSettings );
+
+    while ( 1 )
+    {
+
+        gameInput();
+        renderBoard( gameWindow, gameBoard, boardSettings );
+    }
 
     delwin( gameWindow );
 }
@@ -71,7 +84,7 @@ void deleteBoard( cell ** board, gameSettings * boardSettings )
     board = NULL;
 }
 
-void renderBoard( cell ** board, gameSettings * boardSettings )
+void renderBoard( WINDOW * win, cell ** board, gameSettings * boardSettings )
 {
     int xRenderSize = min( boardSettings->xSize, 40 ); //TODO: replace these hardcoded values with their respective max values based on screen size
     int yRenderSize = min( boardSettings->ySize, 22 );
@@ -80,14 +93,42 @@ void renderBoard( cell ** board, gameSettings * boardSettings )
     {
         for (int j = 0; j < xRenderSize; j++)
         {
-            if ( board[ j ][ i ].visible == 0 )
+            if ( board[ j ][ i ].flagged )
             {
-
+                wattron( win, COLOR_PAIR( 1 ) );
+                mvwprintw( win, i * 2, j, "<\\" );
+                wattroff( win, COLOR_PAIR( 1 ) );
+            }
+            else if ( !board[ j ][ i ].visible )
+            {
+                wattron( win, COLOR_PAIR( 11 ) );
+                mvwprintw( win, i * 2, j, "  " );
+                wattroff( win, COLOR_PAIR( 11 ) );
             } 
+            else if ( board[ j ][ i ].mine )
+            {
+                wattron( win, COLOR_PAIR( 9 ) );
+                mvwprintw( win, i * 2, j, "<>" );
+                wattroff( win, COLOR_PAIR( 9 ) );
+            }
+            else if ( board[ j ][ i ].number )
+            {
+                wattron( win, COLOR_PAIR( board[ j ][ i ].number ) );
+                mvwprintw( win, i * 2, j, " %d", board[ j ][ i ].number );
+                wattroff( win, COLOR_PAIR( board[ j ][ i ].number ) );
+            }
+            else
+            {
+                wattron( win, COLOR_PAIR( board[ j ][ i ].number ) );
+                mvwprintw( win, i * 2, j, "  " );
+                wattroff( win, COLOR_PAIR( board[ j ][ i ].number ) );
+            }
         }
-        
     }
     
+    // draw border and show to screen
+    box( win, 0, 0 );
+    wrefresh( win );
 }
 
 int calculateMineCount( gameSettings * boardSettings )
