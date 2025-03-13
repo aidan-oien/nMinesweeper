@@ -26,6 +26,8 @@
 #include "menu.h"
 #include "game.h"
 
+#define COLOR_GRAY 9
+
 //==================================================================================================//
 // MAIN																								//
 //==================================================================================================//
@@ -41,6 +43,7 @@ int main()
 	curs_set( 0 ); 
 	start_color();
 	init_color( COLOR_BLACK, 0, 0, 0 );
+	init_color( COLOR_GRAY, 400, 400, 400 );
 	init_pair( 1, COLOR_BLUE, COLOR_BLACK ); // 1 and Uncovered
 	init_pair( 2, COLOR_GREEN, COLOR_BLACK );
 	init_pair( 3, COLOR_YELLOW, COLOR_BLACK );
@@ -48,7 +51,7 @@ int main()
 	init_pair( 5, COLOR_RED, COLOR_BLACK );
 	init_pair( 6, COLOR_CYAN, COLOR_BLACK );
 	init_pair( 7, COLOR_WHITE, COLOR_BLACK );
-	init_pair( 8, COLOR_WHITE, COLOR_BLACK );
+	init_pair( 8, COLOR_GRAY, COLOR_BLACK );
 	init_pair( 9, COLOR_BLACK, COLOR_RED ); // Flag
 	init_pair( 10, COLOR_BLACK, COLOR_BLUE ); // Flag
 	init_pair( 11, COLOR_BLUE, COLOR_BLACK ); // Covered

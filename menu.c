@@ -34,7 +34,7 @@ enum difficulty
 
 int mainMenu( int selection );
 gameSettings * difficultyMenu();
-menuSelection menuInput( int length, menuSelection choice, char options[][MENU_STRING_LENGTH], WINDOW * win );
+menuSelection menuInput( int length, menuSelection choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win );
 void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LENGTH], WINDOW * win );
 
 //==================================================================================================//
@@ -48,24 +48,27 @@ int mainMenu( int selection )
     WINDOW * mainMenuWin = newwin( menuLength + 2, menuWidth, y, x );
 
     menuSelection choice;
-
     choice.selection = selection;
     choice.confirm = 0;
 
-    while ( !choice.confirm )
+    char mainMenuOptions[][ MENU_STRING_LENGTH ] =
     {
-        char mainMenuOptions[][ MENU_STRING_LENGTH ] =
-        {
-            "New Game     ",
-            "Leaderboards ",
-            "Options      ",
-            "Exit Game    " 
-        };
-    
+        "New Game     ",
+        "Leaderboards ",
+        "Options      ",
+        "Exit Game    " 
+    };
+
+    while ( !choice.confirm )
+    {    
         choice = menuInput( menuLength, choice, mainMenuOptions, mainMenuWin );
 
         if ( choice.confirm ) break;
     }
+
+    wattron( mainMenuWin, COLOR_PAIR( 8 ) );
+    renderMenu( menuLength, choice, mainMenuOptions, mainMenuWin );
+    wattroff( mainMenuWin, COLOR_PAIR( 8 ) );
 
     delwin( mainMenuWin );
     return choice.selection;
@@ -80,21 +83,20 @@ gameSettings * difficultyMenu()
     WINDOW * difficultyMenuWin = newwin( menuLength + 2, menuWidth, y, x );
 
     menuSelection choice;
-
     choice.selection = 0;
     choice.confirm = 0;
 
+    char mainMenuOptions[][ MENU_STRING_LENGTH ] =
+    {
+        "EASY   ",
+        "MEDIUM ",
+        "HARD   ",
+        "EXPERT \n", 
+        "CUSTOM " 
+    };
+
     while ( !choice.confirm )
     {
-        char mainMenuOptions[][ MENU_STRING_LENGTH ] =
-        {
-            "EASY   ",
-            "MEDIUM ",
-            "HARD   ",
-            "EXPERT \n", 
-            "CUSTOM " 
-        };
-    
         choice = menuInput( menuLength, choice, mainMenuOptions, difficultyMenuWin );
 
         if ( choice.confirm ) break;
@@ -144,9 +146,9 @@ gameSettings * difficultyMenu()
             break;
     }
 
-    wborder( difficultyMenuWin, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' );
+    wclear( difficultyMenuWin );
+    wrefresh( difficultyMenuWin );
     delwin( difficultyMenuWin );
-    refresh();
 
     return settings;   
 }
@@ -208,6 +210,7 @@ void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LE
 
     //mvwprintw( win, choice.selection + 1, 0, ">" );
 
+    refresh();
     wrefresh( win );
 }
 
