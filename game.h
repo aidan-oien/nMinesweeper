@@ -2,9 +2,9 @@
 
 //==================================================================================================//
 
-typedef struct cell cell;
+typedef struct Tile Tile;
 
-struct cell
+struct Tile
 {
     int clicked;
 	int flagged;
@@ -15,11 +15,22 @@ struct cell
 
 //==================================================================================================//
 
-gameResults * startGame( gameSettings * boardSettings );
-cell ** createBoard( gameSettings * boardSettings );
-void deleteBoard( cell ** board, gameSettings * boardSettings );
-void renderBoard( WINDOW * win, cell ** board, gameSettings * boardSettings );
-int calculateMineCount( gameSettings * boardSettings );
+GameResults * startGame( GameSettings * boardSettings );
+
+Tile ** createBoard( GameSettings * boardSettings );
+
+void deleteBoard( Tile ** board, GameSettings * boardSettings );
+
+PlayerSelection gameInput( WINDOW * win, PlayerSelection choice, GameSettings * bounds );
+
+void renderBoard( WINDOW * win, Tile ** board, GameSettings * boardSettings, PlayerSelection selection );
+
+int calculateMineCount( GameSettings * boardSettings );
+
+Tile ** plotMines( Tile ** board, GameSettings * boardSettings );
+
 int min( int a, int b );
+
+Tile ** plotNumbers( Tile ** board, GameSettings * boardSettings );
 
 //==================================================================================================//

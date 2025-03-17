@@ -4,22 +4,16 @@
 
 //==================================================================================================//
 
-typedef struct menuSelection menuSelection;
+// typedef struct menuOption menuOption;
 
-struct menuSelection
-{
-	int confirm;
-	int selection;
-};
-
-struct menuOption
-{
-    char isDoSomethingOption;
-    char isListOption;
-    char isNumberTypeBox;
-    char optionName[ MENU_STRING_LENGTH ];
-    char listOptionList[ 5 ][ MENU_STRING_LENGTH ];
-};
+// struct menuOption
+// {
+//     char isDoSomethingOption;
+//     char isListOption;
+//     char isNumberTypeBox;
+//     char optionName[ MENU_STRING_LENGTH ];
+//     char listOptionList[ 5 ][ MENU_STRING_LENGTH ];
+// };
 
 enum difficulty
 {
@@ -30,83 +24,102 @@ enum difficulty
     CUSTOM
 };
 
+enum actionDescriptor
+{
+    NO_ACTION,
+    SELECT,
+    BACK = -1
+};
+
 //==================================================================================================//
 
 int mainMenu( int selection );
-gameSettings * difficultyMenu();
-menuSelection menuInput( int length, menuSelection choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win );
-void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LENGTH], WINDOW * win );
+GameSettings * difficultyMenu();
+
+PlayerSelection menuInput( int length, PlayerSelection choice, char menuOptions[][ MENU_STRING_LENGTH ], WINDOW * win );
+void renderMenu( int length, PlayerSelection choice, char options[][ MENU_STRING_LENGTH ], WINDOW * win, int color );
 
 //==================================================================================================//
+
+//
+// Main Menu
+// shows the main menu and only returns an option once something has been selected
+//
 
 int mainMenu( int selection )
 {
     int x = 3, y = 2;
     int menuWidth = 17;
-    int menuLength = 4;
+    int menuLength = 5;
 
     WINDOW * mainMenuWin = newwin( menuLength + 2, menuWidth, y, x );
 
-    menuSelection choice;
-    choice.selection = selection;
-    choice.confirm = 0;
+    PlayerSelection choice;
+
+    choice.ySelection = selection;
+    choice.xSelection = 0;
+    
 
     char mainMenuOptions[][ MENU_STRING_LENGTH ] =
     {
         "New Game     ",
+        "Saved Game   ",
         "Leaderboards ",
         "Options      ",
         "Exit Game    " 
     };
 
-    while ( !choice.confirm )
+    do
     {    
         choice = menuInput( menuLength, choice, mainMenuOptions, mainMenuWin );
-
-        if ( choice.confirm ) break;
     }
+    while ( !choice.action );
 
-    wattron( mainMenuWin, COLOR_PAIR( 8 ) );
-    renderMenu( menuLength, choice, mainMenuOptions, mainMenuWin );
-    wattroff( mainMenuWin, COLOR_PAIR( 8 ) );
+    if ( choice.action == BACK ) return -1;
 
     delwin( mainMenuWin );
-    return choice.selection;
+
+    return choice.ySelection;
 }
 
-gameSettings * difficultyMenu()
+//
+// Difficulty Menu
+// shows the difficulty menu and only returns a value once something has been selected
+//
+
+GameSettings * difficultyMenu()
 {
     int x = 20, y = 2;
     int menuWidth = 11;
-    int menuLength = 6;
+    int menuLength = 5;
 
     WINDOW * difficultyMenuWin = newwin( menuLength + 2, menuWidth, y, x );
 
-    menuSelection choice;
-    choice.selection = 0;
-    choice.confirm = 0;
+    PlayerSelection choice;
+
+    choice.xSelection = 0;
+    choice.ySelection = 0;
 
     char mainMenuOptions[][ MENU_STRING_LENGTH ] =
     {
-        "EASY   ",
-        "MEDIUM ",
-        "HARD   ",
-        "EXPERT \n", 
-        "CUSTOM " 
+        "Easy   ",
+        "Medium ",
+        "Hard   ",
+        "Expert ", 
+        "Custom " 
     };
 
-    while ( !choice.confirm )
+    do
     {
         choice = menuInput( menuLength, choice, mainMenuOptions, difficultyMenuWin );
-
-        if ( choice.confirm ) break;
     }
+    while ( !choice.action );
 
-    if ( choice.selection = -1 ) return NULL;
+    if ( choice.action == BACK ) return NULL;
 
-    gameSettings * settings = malloc( sizeof( gameSettings ) );
+    GameSettings * settings = malloc( sizeof( GameSettings ) );
 
-    switch ( choice.selection )
+    switch ( choice.ySelection )
     {
         case EASY:
             settings->xSize = 9;
@@ -146,69 +159,82 @@ gameSettings * difficultyMenu()
             break;
     }
 
-    wclear( difficultyMenuWin );
-    wrefresh( difficultyMenuWin );
     delwin( difficultyMenuWin );
 
     return settings;   
 }
 
-menuSelection menuInput( int length, menuSelection choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win )
+//
+// Menu Input
+// takes input in from the user and refreshes the menu every time input is recieved
+//
+
+PlayerSelection menuInput( int length, PlayerSelection choice, char menuOptions[][ MENU_STRING_LENGTH ], WINDOW * win )
 {
-    renderMenu( length, choice, menuOptions, win );
+    renderMenu( length, choice, menuOptions, win, COLOR_MENU_ACTIVE );
+
+    choice.action = 0;
 
     int ch = wgetch( win );
 
     switch( ch )
     {
-        case KEY_UP:
+        //case KEY_UP:
         case 'w':
-            if (choice.selection > 0) choice.selection--;
+            if ( choice.ySelection > 0) choice.ySelection--;
+            else choice.ySelection = length - 1;
             break;
  
-        case KEY_DOWN:
+        //case KEY_DOWN:
         case 's':
-            if ( choice.selection < length - 1 ) choice.selection++;
+            // if ( choice.ySelection < length - 1 ) choice.ySelection++;
+            choice.ySelection++;
+            choice.ySelection = choice.ySelection % length;
             break;
 
         case 'e':
-            choice.confirm = 1;
+            choice.action = SELECT;
+            // this code greys out the menu once something is selected
+            renderMenu( length, choice, menuOptions, win , COLOR_MENU_INACTIVE );
             break;
 
         case 27:
-            choice.selection = -1;
-            choice.confirm = 1;
+            choice.action = BACK;
             break;
     }
 
     return choice;
 }
 
-void renderMenu( int length, menuSelection choice, char options[][MENU_STRING_LENGTH], WINDOW * win )
+//
+// Render Menu
+// renders the menu after every input
+//
+
+void renderMenu( int length, PlayerSelection choice, char options[][ MENU_STRING_LENGTH ], WINDOW * win, int color )
 {
-	int y = 1;
+    wattron( win, COLOR_PAIR( color ) );
 
 	for ( int i = 0; i <= length; i++ )
 	{
-		if ( choice.selection == i )
+		if ( choice.ySelection == i )
         {
 			wattron( win, A_STANDOUT );
-			mvwprintw( win, y, 2, options[ i ] );
+			mvwprintw( win, i + 1, 2, options[ i ] );
 			wattroff( win, A_STANDOUT );
 		}
 		else
 		{
-			mvwprintw( win, y, 2, options[ i ] );
+			mvwprintw( win, i + 1, 2, options[ i ] );
 		}
-
-		y++;
 	}
 
-	mvprintw( 0, 0, "nMinesweeper" );
-
     box( win, 0, 0 );
+    mvwprintw( win, choice.ySelection + 1, 0, ">" );
 
-    //mvwprintw( win, choice.selection + 1, 0, ">" );
+    wattroff( win, COLOR_PAIR( color ) );
+
+	mvprintw( 0, 0, "nMinesweeper" );
 
     refresh();
     wrefresh( win );

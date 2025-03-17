@@ -2,17 +2,10 @@
 
 //==================================================================================================//
 
-typedef struct menuSelection menuSelection;
-
-struct menuSelection
-{
-	int confirm;
-	int selection;
-};
-
 enum option
 {
     NEW_GAME,
+    SAVED_GAME,
     LEADERBOARDS,
     OPTIONS,
     QUIT_GAME
@@ -21,9 +14,11 @@ enum option
 //==================================================================================================//
 
 int mainMenu( int selection );
-gameSettings * difficultyMenu();
 
-menuSelection menuInput( int length, menuSelection choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win );
-void renderMenu( int length, menuSelection selection, char options[][MENU_STRING_LENGTH], WINDOW * win );
+GameSettings * difficultyMenu();
+
+PlayerSelection menuInput( int length, PlayerSelection choice, char menuOptions[][MENU_STRING_LENGTH], WINDOW * win );
+
+void renderMenu( int length, PlayerSelection choice, char options[][ MENU_STRING_LENGTH ], WINDOW * win, int color );
 
 //==================================================================================================//
